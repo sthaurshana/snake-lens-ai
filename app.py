@@ -1,12 +1,17 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
+import tensorflow as tf
 
-st.title("🐍 Snake Species Detector (Final Debug Version)")
+# Load model
+model = tf.keras.models.load_model("model.h5")
 
-st.write("Upload or take a photo of a snake")
+# Load labels
+with open("labels.txt", "r") as f:
+    labels = f.read().splitlines()
 
-# Input
+st.title("🐍 Snake Species Detector")
+
 camera = st.camera_input("Take a picture")
 upload = st.file_uploader("Upload image", type=["jpg", "jpeg", "png"])
 
@@ -14,17 +19,22 @@ file = camera if camera else upload
 
 if file:
     image = Image.open(file)
-    st.image(image, caption="Input Image", use_column_width=True)
+    st.image(image, caption="Input Image")
 
-    st.success("Image loaded successfully")
+    # Preprocess
+    img = image.resize((224, 224))
+    img = np.array(img).astype("float32") / 255.0
+    img = np.expand_dims(img, axis=0)
 
-    # Dummy prediction (for debugging model issue)
-    # Replace this when your model is fixed
-    prediction = np.array([0.0, 0.0, 0.0])
+    # Prediction
+    prediction = model.predict(img)
 
-    st.write("Raw prediction (DEBUG):", prediction)
+    st.write("Raw prediction:", prediction)
 
-    # Show fake labels (for UI testing only)
-    labels = ["cobra", "python", "viper"]
+    class_index = np.argmax(prediction[0])
+    confidence = np.max(prediction[0])
 
-    st.info("Prediction system is running (model needs retraining for accuracy)")
+    result = labels[class_index]
+
+    st.success(f"Prediction: {result}")
+    st.info(f"Confidence: {confidence:.2f}")
