@@ -1,46 +1,33 @@
 import streamlit as st
-import tensorflow as tf
 import numpy as np
 from PIL import Image
+from keras.models import load_model
 
 # Load model
-model = tf.keras.models.load_model("model.h5")
+model = load_model("model.h5")
 
-# Load labels
-with open("labels.txt", "r") as f:
-    labels = f.read().splitlines()
+# Class labels (CHANGE if your dataset is different)
+classes = ["cobra", "python", "viper"]
 
-st.title("🐍 Snake Species Identifier")
+# UI
+st.title("🐍 Snake Species Detector (AI)")
+st.write("Upload an image of a snake and get prediction")
 
-st.write("Take a photo or upload an image of a snake")
+# Upload image
+file = st.file_uploader("Upload Snake Image", type=["jpg", "jpeg", "png"])
 
-# Camera input
-img_file = st.camera_input("Take a picture")
+if file is not None:
+    image = Image.open(file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-# Upload option
-uploaded_file = st.file_uploader("Or upload image", type=["jpg", "png", "jpeg"])
-
-image = None
-
-if img_file:
-    image = Image.open(img_file)
-elif uploaded_file:
-    image = Image.open(uploaded_file)
-
-if image:
-    st.image(image, caption="Input Image", use_column_width=True)
-
-    # Preprocess
+    # preprocess image
     img = image.resize((224, 224))
-    img = np.array(img) / 255.0
+    img = np.array(img)
+    img = img / 255.0
     img = np.expand_dims(img, axis=0)
 
-    # Prediction
+    # prediction
     prediction = model.predict(img)
-    class_index = np.argmax(prediction)
-    confidence = np.max(prediction)
-
-    result = labels[class_index]
+    result = classes[np.argmax(prediction)]
 
     st.success(f"Prediction: {result}")
-    st.info(f"Confidence: {confidence:.2f}")
