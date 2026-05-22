@@ -1,40 +1,28 @@
 import streamlit as st
-import numpy as np
 from PIL import Image
-import tensorflow as tf
+import numpy as np
 
-# Load model (IMPORTANT: new file name)
-model = tf.keras.models.load_model("model.keras")
+st.set_page_config(page_title="Snake Lens AI")
 
-# Load labels
-with open("labels.txt", "r") as f:
-    labels = f.read().splitlines()
+st.title("🐍 Snake Species Identifier")
+st.write("Upload or capture image of a snake")
 
-st.title("🐍 Snake Species Detector")
+# Camera + Upload
+img_file = st.camera_input("Take a picture")
+uploaded_file = st.file_uploader("Or upload image", type=["jpg", "png", "jpeg"])
 
-st.write("Upload or take a picture")
+image = None
 
-camera = st.camera_input("Take a picture")
-upload = st.file_uploader("Upload image", type=["jpg", "jpeg", "png"])
+if img_file:
+    image = Image.open(img_file)
 
-file = camera if camera else upload
+elif uploaded_file:
+    image = Image.open(uploaded_file)
 
-if file:
-    image = Image.open(file)
-    st.image(image, caption="Input Image")
+if image:
+    st.image(image, caption="Input Image", use_container_width=True)
 
-    # Preprocess image
-    img = image.resize((224, 224))
-    img = np.array(img).astype("float32") / 255.0
-    img = np.expand_dims(img, axis=0)
+    st.info("⚠️ Cloud version does not run TensorFlow model yet.")
 
-    # Prediction
-    prediction = model.predict(img)
-
-    class_index = int(np.argmax(prediction[0]))
-    confidence = float(np.max(prediction[0]))
-
-    result = labels[class_index]
-
-    st.success(f"Prediction: {result}")
-    st.info(f"Confidence: {confidence:.2f}")
+    st.success("Prediction: (model disabled in cloud)")
+    st.write("To enable AI, use local version or upgrade model later.")
