@@ -2,22 +2,13 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 
-# Load labels from labels.txt
-def load_labels(path="labels.txt"):
-    with open(path, "r") as f:
-        labels = [line.strip() for line in f.readlines()]
-    return labels
+st.title("🐍 Snake Species Detector (Final Debug Version)")
 
-# Dummy prediction function (replace with your ML model later)
-def predict_snake(image, labels):
-    # For now, just pick a random label
-    return np.random.choice(labels)
+st.write("Upload or take a photo of a snake")
 
-# Streamlit UI
-st.title("🐍 Snake Detector")
-
+# Input
 camera = st.camera_input("Take a picture")
-upload = st.file_uploader("Upload image", type=["jpg", "png", "jpeg"])
+upload = st.file_uploader("Upload image", type=["jpg", "jpeg", "png"])
 
 file = camera if camera else upload
 
@@ -25,9 +16,15 @@ if file:
     image = Image.open(file)
     st.image(image, caption="Input Image", use_column_width=True)
 
-    st.success("App is working")
+    st.success("Image loaded successfully")
 
-    labels = load_labels()
-    prediction = predict_snake(image, labels)
+    # Dummy prediction (for debugging model issue)
+    # Replace this when your model is fixed
+    prediction = np.array([0.0, 0.0, 0.0])
 
-    st.info(f"Prediction: {prediction}")
+    st.write("Raw prediction (DEBUG):", prediction)
+
+    # Show fake labels (for UI testing only)
+    labels = ["cobra", "python", "viper"]
+
+    st.info("Prediction system is running (model needs retraining for accuracy)")
