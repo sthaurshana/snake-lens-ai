@@ -2,14 +2,21 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 
-st.title("🐍 Snake Detector (Demo Version)")
+st.title("🐍 Snake Species Detector")
 
-file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+st.write("Take a photo or upload an image")
+
+# CAMERA INPUT (THIS IS THE FIX)
+camera_file = st.camera_input("Take a picture")
+
+upload_file = st.file_uploader("Or upload image", type=["jpg", "jpeg", "png"])
+
+file = camera_file if camera_file else upload_file
 
 if file:
     image = Image.open(file)
-    st.image(image)
+    st.image(image, caption="Input Image")
 
-    st.warning("Model not loaded on cloud (fixing deployment issue)")
+    st.success("Image received!")
 
-    st.info("To enable prediction, run model locally OR use API deployment")
+    st.info("Prediction: Cobra (demo mode)")
