@@ -5,18 +5,20 @@ from PIL import Image
 
 st.set_page_config(page_title="Snake AI Lens")
 
-st.title("🐍 Snake Species AI Detector")
-st.write("Upload or take a photo of a snake")
+st.title("🐍 Snake Species Detector")
 
-# Load MobileNet model (lightweight pretrained AI)
+# Load model
 @st.cache_resource
 def load_model():
-    model = tf.keras.applications.MobileNetV2(weights="imagenet")
+    model = tf.keras.models.load_model("model.h5")
     return model
 
 model = load_model()
 
-# Image input
+# Load labels
+with open("labels.txt", "r") as f:
+    class_names = f.read().splitlines()
+
 img_file = st.camera_input("Take a picture")
 uploaded_file = st.file_uploader("Or upload image", type=["jpg","png","jpeg"])
 
@@ -28,20 +30,18 @@ elif uploaded_file:
     image = Image.open(uploaded_file)
 
 if image:
-    st.image(image, caption="Input Image", use_container_width=True)
+    image = image.convert("RGB")
+    st.image(image, use_container_width=True)
 
-    # preprocess
     img = image.resize((224, 224))
-    img = np.array(img)
+    img = np.array(img) / 255.0
     img = np.expand_dims(img, axis=0)
-    img = tf.keras.applications.mobilenet_v2.preprocess_input(img)
 
-    # prediction
     preds = model.predict(img)
-    decoded = tf.keras.applications.mobilenet_v2.decode_predictions(preds, top=1)[0]
 
-    label = decoded[0][1]
-    confidence = decoded[0][2]
+    class_index = np.argmax(preds)
+    label = class_names[class_index]
+    confidence = float(np.max(preds))
 
     st.success(f"Prediction: {label}")
     st.info(f"Confidence: {confidence:.2f}")
